@@ -2,10 +2,10 @@
 .idea/
 
 # Dataset folder for this project
+data/
 !src/
 !src/data/
 !src/data/*.*
-data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
