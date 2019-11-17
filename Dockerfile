@@ -6,4 +6,3 @@ RUN apt-get update && apt-get install -y \
      libxrender-dev
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
