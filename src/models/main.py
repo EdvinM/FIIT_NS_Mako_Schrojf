@@ -313,7 +313,11 @@ class Predict():
 # Compile mini vgg model & create data
 model = Model(df_path='../../data/processed/wiki_df.csv', y_column_name='age')
 model.split_df()
-keras_model = model.compile(VGGModel().create(classes=101))
+
+vgg = VGGModel()
+vgg.load_weights()
+
+keras_model = model.compile(vgg.create(classes=101))
 
 print("Model compilation successfull...")
 
