@@ -61,7 +61,7 @@ class VGGModel():
 		self.model.add(Activation('softmax'))
 
 	def load_weights(self, weights_file='../../data/vgg_face_weights.h5'):
-		self.model.weights(weights_file)
+		self.model.load_weights(weights_file)
 
 		for layer in self.model.layers[:-7]:
 			layer.trainable = False
@@ -323,7 +323,7 @@ print("Model compilation successfull...")
 
 # Train the model
 train = Train(model)
-train.start(epochs=20, batch_size=8)
+train.start(epochs=30, batch_size=16)
 train.summary()
 
 print("Model train successfull...")
