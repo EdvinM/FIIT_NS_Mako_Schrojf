@@ -9,8 +9,71 @@ import tensorflow.keras as keras
 
 from tensorflow.keras.utils import Sequence
 from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, Flatten
-from tensorflow.keras.layers import Activation, BatchNormalization, Dropout
+from tensorflow.keras.layers import Activation, BatchNormalization, Dropout, ZeroPadding2D, Convolution2D
+
+class VGGModel():
+	def __init__(self):
+		self.model = Sequential()
+		self.model.add(ZeroPadding2D((1,1),input_shape=(224,224, 3)))
+		self.model.add(Convolution2D(64, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(64, (3, 3), activation='relu'))
+		self.model.add(MaxPooling2D((2,2), strides=(2,2)))
+		 
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(128, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(128, (3, 3), activation='relu'))
+		self.model.add(MaxPooling2D((2,2), strides=(2,2)))
+		 
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(256, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(256, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(256, (3, 3), activation='relu'))
+		self.model.add(MaxPooling2D((2,2), strides=(2,2)))
+		 
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(512, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(512, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(512, (3, 3), activation='relu'))
+		self.model.add(MaxPooling2D((2,2), strides=(2,2)))
+		 
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(512, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(512, (3, 3), activation='relu'))
+		self.model.add(ZeroPadding2D((1,1)))
+		self.model.add(Convolution2D(512, (3, 3), activation='relu'))
+		self.model.add(MaxPooling2D((2,2), strides=(2,2)))
+		 
+		self.model.add(Convolution2D(4096, (7, 7), activation='relu'))
+		self.model.add(Dropout(0.5))
+		self.model.add(Convolution2D(4096, (1, 1), activation='relu'))
+		self.model.add(Dropout(0.5))
+		self.model.add(Convolution2D(2622, (1, 1)))
+		self.model.add(Flatten())
+		self.model.add(Activation('softmax'))
+
+	def load_weights(self, weights_file='../../data/vgg_face_weights.h5'):
+		self.model.weights(weights_file)
+
+		for layer in self.model.layers[:-7]:
+			layer.trainable = False
+
+	def create(self, classes):
+		base_model_output = Sequential()
+		base_model_output = Convolution2D(classes, (1, 1), name='predictions')(self.model.layers[-4].output)
+		base_model_output = Flatten()(base_model_output)
+		base_model_output = Activation('softmax')(base_model_output)
+		 
+		return keras.Model(inputs=self.model.input, outputs=base_model_output)
+
 
 class MiniVGGNetModel(keras.Model):
     def __init__(self, classes, chanDim=-1):
@@ -250,13 +313,17 @@ class Predict():
 # Compile mini vgg model & create data
 model = Model(df_path='../../data/processed/wiki_df.csv', y_column_name='age')
 model.split_df()
-keras_model = model.compile(MiniVGGNetModel(classes=101))
+
+vgg = VGGModel()
+vgg.load_weights()
+
+keras_model = model.compile(vgg.create(classes=101))
 
 print("Model compilation successfull...")
 
 # Train the model
 train = Train(model)
-train.start(epochs=60, batch_size=32)
+train.start(epochs=20, batch_size=8)
 train.summary()
 
 print("Model train successfull...")
