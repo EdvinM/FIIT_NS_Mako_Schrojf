@@ -13,10 +13,11 @@ class WIKISequence(Sequence):
     Example: https://www.tensorflow.org/api_docs/python/tf/keras/utils/Sequence
     """
 
-    def __init__(self, dataset_df, batch_size, base_path = '../data/raw/wiki_crop/'):
-        self.base_path = base_path
-        self.dataset_df = dataset_df
+    def __init__(self, x, y, batch_size, base_path = '../data/raw/wiki_crop/'):
+        self.x = x
+        self.y = y
         self.batch_size = batch_size
+        self.base_path = base_path
 
     def load_img(self, file_path):
         """Load single image from disk and resize and convert to np array
@@ -34,16 +35,17 @@ class WIKISequence(Sequence):
         Returns:
             A batch
         """
-        batch_df = self.dataset_df[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_x = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        return np.array([self.load_img(full_path) for full_path in batch_df['full_path']]), np.array(batch_df['age'])
+        return np.array([self.load_img(full_path) for full_path in batch_x['full_path']]), np.array(batch_y['age'])
 
     def __len__(self):
         """Number of batch in the Sequence.
         Returns:
             The number of batches in the Sequence.
         """
-        return math.ceil(len(self.dataset_df) / self.batch_size)
+        return math.ceil(len(self.x) / self.batch_size)
 
     def on_epoch_end(self):
         """Method called at the end of every epoch.
