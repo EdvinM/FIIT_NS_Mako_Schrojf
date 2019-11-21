@@ -27,14 +27,16 @@ class WIKISequence(Sequence):
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         return (np.array(im) / 255.0).astype(np.float32)
 
-    def __getitem__(self, index):
+    def __getitem__(self, idx):
         """Gets batch at position `index`.
         Arguments:
             index: position of the batch in the Sequence.
         Returns:
             A batch
         """
-        raise NotImplementedError
+        batch_df = self.dataset_df[idx * self.batch_size:(idx + 1) * self.batch_size]
+
+        return np.array([self.load_img(full_path) for full_path in batch_df['full_path']]), np.array(batch_df['age'])
 
     def __len__(self):
         """Number of batch in the Sequence.
