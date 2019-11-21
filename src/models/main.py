@@ -256,7 +256,7 @@ print("Model compilation successfull...")
 
 # Train the model
 train = Train(model)
-train.start()
+train.start(epochs=60, batch_size=32)
 train.summary()
 
 print("Model train successfull...")

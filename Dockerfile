@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:latest-gpu-py3-jupyter
+FROM tensorflow/tensorflow:latest-gpu-py3
 
 RUN apt-get update && apt-get install -y \
      libsm6 \
@@ -6,3 +6,5 @@ RUN apt-get update && apt-get install -y \
      libxrender-dev
 
 COPY requirements.txt .
+RUN pip install -r requirements.txt
+
