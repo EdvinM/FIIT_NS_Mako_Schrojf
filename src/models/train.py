@@ -45,6 +45,16 @@ class Train():
 		print("Validation Accuracy: " + history.history['val_acc'])
 		print("Loss: " + history.history['loss'])
 		print("Validation Loss: " + history.history['val_loss'])
-
+        
 	def summary():
 		print(self.model.summary())
+
+	def save_model(name="model")
+		# serialize model to JSON
+		model_json = self.model.to_json()
+		with open("trained_models/" + name + ".json", "w") as json_file:
+		    json_file.write(model_json)
+
+		# serialize weights to HDF5
+		self.model.save_weights("trained_models/" + name + ".h5")
+		print("Saved model to disk")

@@ -325,6 +325,7 @@ print("Model compilation successfull...")
 train = Train(model)
 train.start(epochs=30, batch_size=16)
 train.summary()
+train.save_model("full-vgg")
 
 print("Model train successfull...")
 

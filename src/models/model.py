@@ -1,4 +1,5 @@
 from sklearn.model_selection import train_test_split
+from keras.models import model_from_json
 import pandas as pd
 
 class Model():
@@ -49,3 +50,13 @@ class Model():
 
 	def test_data():
 		return (self.test_x, self.test_y)
+
+	def load_model(name="model"):
+		json_file = open("trained_models/" + name + '.json', 'r')
+		loaded_model_json = json_file.read()
+		json_file.close()
+		self.model = model_from_json(loaded_model_json)
+
+		# load weights into new model
+		self.model.load_weights("trained_models/" + name + ".h5")
+		print("Loaded model from disk")
