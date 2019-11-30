@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 import tensorflow.keras as keras
+import sys, getopt
 
 from tensorflow.keras.utils import Sequence
 from sklearn.model_selection import train_test_split
@@ -323,7 +324,7 @@ print("Model compilation successfull...")
 
 # Train the model
 train = Train(model)
-train.start(epochs=30, batch_size=16)
+train.start(epochs=int(sys.argv[0]), batch_size=int(sys.argv[1]))
 train.summary()
 train.save_model("full-vgg")
 
