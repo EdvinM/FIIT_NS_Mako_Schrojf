@@ -35,7 +35,14 @@ if __name__ == "__main__":
         keras.callbacks.TensorBoard(
             log_dir=os.path.join(logs_path, MODEL_NAME, datetime_stamp),
             histogram_freq=1,
-            profile_batch=0)
+            profile_batch=0),
+
+        keras.callbacks.ModelCheckpoint(
+            filepath=os.path.join("../models/", MODEL_NAME, "checkpoints", "age_model.hdf5"),
+            monitor="val_loss",
+            verbose=1,
+            save_best_only=True,
+            mode='auto')
     ]
 
     if not os.path.isfile('../data/vgg_face_weights.h5'):
@@ -67,11 +74,11 @@ if __name__ == "__main__":
 
     print(vgg_face_age_model.summary())
 
-    print("===== Training Summary =====")
-    print("Accuracy: " + history.history['acc'])
-    print("Validation Accuracy: " + history.history['val_acc'])
-    print("Loss: " + history.history['loss'])
-    print("Validation Loss: " + history.history['val_loss'])
+    print("= ===== Training Summary =====")
+    print("= Accuracy: " + history.history['acc'])
+    print("= Validation Accuracy: " + history.history['val_acc'])
+    print("= Loss: " + history.history['loss'])
+    print("= Validation Loss: " + history.history['val_loss'])
 
     # Save model
 
