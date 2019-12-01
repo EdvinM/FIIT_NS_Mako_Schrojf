@@ -31,6 +31,14 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(__file__))
     sys.path.insert(0, os.getcwd())
 
+    model_path = os.path.join("../models/", MODEL_NAME, "checkpoints")
+
+    if not os.path.isdir(model_path):
+        try:
+            os.makedirs(model_path)
+        except OSError:
+            raise Exception("Creation of the directory %s failed" % model_path)
+
     callbacks = [
         keras.callbacks.TensorBoard(
             log_dir=os.path.join(logs_path, MODEL_NAME, datetime_stamp),
@@ -38,7 +46,7 @@ if __name__ == "__main__":
             profile_batch=0),
 
         keras.callbacks.ModelCheckpoint(
-            filepath=os.path.join("../models/", MODEL_NAME, "checkpoints", "age_model.hdf5"),
+            filepath=os.path.join(model_path, "age_model.hdf5"),
             monitor="val_loss",
             verbose=1,
             save_best_only=True,
@@ -75,20 +83,21 @@ if __name__ == "__main__":
     print(vgg_face_age_model.summary())
 
     print("= ===== Training Summary =====")
-    print("= Accuracy: " + history.history['acc'])
-    print("= Validation Accuracy: " + history.history['val_acc'])
-    print("= Loss: " + history.history['loss'])
-    print("= Validation Loss: " + history.history['val_loss'])
+    print(dir(history))
+    # print("= Accuracy: " + history['acc'])
+    # print("= Validation Accuracy: " + history['val_acc'])
+    # print("= Loss: " + history['loss'])
+    # print("= Validation Loss: " + history['val_loss'])
 
     # Save model
 
     # serialize model to JSON
     model_json = vgg_face_age_model.to_json()
-    with open("trained_models/" + MODEL_NAME + "/" + MODEL_NAME + ".json", "w") as json_file:
+    with open("../models/" + MODEL_NAME + "/" + "model" + ".json", "w") as json_file:
         json_file.write(model_json)
 
     # serialize weights to HDF5
-    vgg_face_age_model.save_weights("trained_models/" + MODEL_NAME + "/" + MODEL_NAME + ".h5")
+    vgg_face_age_model.save_weights("../models/" + MODEL_NAME + "/" + "weights" + ".h5")
     print("= Model saved to disk")
 
     # exit
