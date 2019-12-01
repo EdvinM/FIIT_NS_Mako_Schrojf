@@ -19,7 +19,7 @@ def load_wiki_df_from_csv(path='../../data/processed/wiki_df.csv'):
 
 def load_wiki_df_from_pkl(path='../../data/processed/wiki_meta_df.pkl'):
     columns = ['full_path', 'gender', 'age']
-    wiki_df = pd.read_pickle(path, sep=';')
+    wiki_df = pd.read_pickle(path)
 
     if wiki_df is None:
         raise Exception("Unable to open data frame")
@@ -51,7 +51,7 @@ def load_imdb_df_from_csv(path='../../data/processed/imdb_df.csv'):
 
 def load_imdb_df_from_pkl(path='../../data/processed/imdb_meta_df.pkl'):
     columns = ['full_path', 'gender', 'age']
-    imdb_df = pd.read_pickle(path, sep=';')
+    imdb_df = pd.read_pickle(path)
 
     if imdb_df is None:
         raise Exception("Unable to open data frame")
