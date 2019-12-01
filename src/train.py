@@ -1,60 +1,88 @@
 import os
-import sys
-sys.path.insert(0, os.getcwd())
+from datetime import datetime
 
-from src.data import WIKISequence
+import tensorflow as tf
+import tensorflow.keras as keras
 
-# load data as df
-# initialize train and test Sequence
-# test = WIKISequence(...)
-# train model
+import models.VGGFaceModel as VGGFaceModel
 
-print("ok")
+import data.load_data as load_data
 
-class Train():
-	def __init__(self, model, logs_path = 'logs'):
-		self.model = model
+from data.IMDBSequence import IMDBSequence
+from data.WIKISequence import WIKISequence
 
-		self.callbacks = callbacks = [
-		    keras.callbacks.TensorBoard(
-		        log_dir=os.path.join(logs_path, timestamp()),
-		        histogram_freq=1,
-		        profile_batch=0)
-		]
+from pathlib import Path
+# BASE_PATH = Path(__file__).parent.absolute()
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+os.chdir(BASE_PATH)
 
-	def start(epochs = 1, batch_size = 16):
-		train_seq = WIKISequence(
-			self.model.train_data()[0], 
-			self.model.train_data()[1], batch_size=batch_size)
-		test_seq = WIKISequence(
-			self.model.test_data()[0], 
-			self.model.test_data()[1], batch_size=batch_size)
+MODEL_NAME = 'VGG_FACE_AGE_PREDICT'
 
-		print("Train sequence data length= " + str(len(train_seq)))
-		print("Test sequence data length= " + str(len(test_seq)))
+now = datetime.now()  # current date and time
+datetime_stamp = now.strftime("%Y-%m-%d__%H-%M-%S")
+print("= STARTED", datetime_stamp)
 
-		history = self.model.fit_generator(
-	   		train_seq,
-	     	epochs=epochs,
-		    validation_data=test_seq,
-		    callbacks = self.callbacks
-		)
+# Keras callbacks
+logs_path = "../logs/"
 
-		print("===== Training Summary =====")
-		print("Accuracy: " + history.history['acc'])
-		print("Validation Accuracy: " + history.history['val_acc'])
-		print("Loss: " + history.history['loss'])
-		print("Validation Loss: " + history.history['val_loss'])
-        
-	def summary():
-		print(self.model.summary())
+if __name__ == "__main__":
+    import sys
 
-	def save_model(name="model")
-		# serialize model to JSON
-		model_json = self.model.to_json()
-		with open("trained_models/" + name + ".json", "w") as json_file:
-		    json_file.write(model_json)
+    sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.getcwd())
 
-		# serialize weights to HDF5
-		self.model.save_weights("trained_models/" + name + ".h5")
-		print("Saved model to disk")
+    callbacks = [
+        keras.callbacks.TensorBoard(
+            log_dir=os.path.join(logs_path, MODEL_NAME, datetime_stamp),
+            histogram_freq=1,
+            profile_batch=0)
+    ]
+
+    if not os.path.isfile('../data/vgg_face_weights.h5'):
+        raise Exception("File with pretrained model weight not available in: '../data/vgg_face_weights.h5'")
+
+    # Build new model with loaded weights
+    vgg_face_age_model = VGGFaceModel.build_new_age_model()
+    print("= NEW VGG-FACE MODEL WITH PRETRAINED WEIGHTS WAS CREATED\n")
+
+    # Load dataset
+    wiki_df = load_data.load_wiki_df_from_csv('../data/processed/wiki_df.csv')
+    print("= " + str(len(wiki_df)) + " ROWS OF WIKI DATA LOADED\n")
+
+    # Split dataset by ratio: 0.7 / 0.3
+    BATCH_SIZE = 64  # Todo: check if GPU has enough memory
+
+    wiki_generator_train = WIKISequence(wiki_df[0:15052], 'age', BATCH_SIZE)
+    wiki_generator_test = WIKISequence(wiki_df[15052:22578], 'age', BATCH_SIZE)
+
+    # Train model
+    EPOCH = 200
+
+    history = vgg_face_age_model.fit_generator(
+        wiki_generator_train,
+        epochs=EPOCH,
+        validation_data=wiki_generator_test,
+        callbacks=callbacks
+    )
+
+    print(vgg_face_age_model.summary())
+
+    print("===== Training Summary =====")
+    print("Accuracy: " + history.history['acc'])
+    print("Validation Accuracy: " + history.history['val_acc'])
+    print("Loss: " + history.history['loss'])
+    print("Validation Loss: " + history.history['val_loss'])
+
+    # Save model
+
+    # serialize model to JSON
+    model_json = vgg_face_age_model.to_json()
+    with open("trained_models/" + MODEL_NAME + "/" + MODEL_NAME + ".json", "w") as json_file:
+        json_file.write(model_json)
+
+    # serialize weights to HDF5
+    vgg_face_age_model.save_weights("trained_models/" + MODEL_NAME + "/" + MODEL_NAME + ".h5")
+    print("= Model saved to disk")
+
+    # exit
+    sys.exit(0)
