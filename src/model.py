@@ -1,62 +1,75 @@
-from sklearn.model_selection import train_test_split
-from keras.models import model_from_json
-import pandas as pd
+import os
 
-class Model():
+import tensorflow as tf
+import tensorflow.keras as keras
+from tensorflow.keras.models import model_from_json
 
-	def __init__(self, df_path, y_column_name):
-		
-		self.df = pd.read_csv(df_path, sep=';')
+import models.VGGFaceModel as VGGFaceModel
 
-		if self.df == None:
-			print("Unable to open dataframe")
-			break
+# load model from file
+# load model from and then load weights
+# create empty model
 
-		if y_column_name not in self.df.columns:
-			print("Column not found in dataframe columns")
-			break
+MODEL_NAME = 'VGG_FACE_AGE_PREDICT'
 
-		self.x = self.df.loc[:, self.df.columns != y_column_name]
-		self.y = self.df.loc[:, self.df.columns == y_column_name]
+model_path = "../models/" + MODEL_NAME + "/model.json"
+weight_path = "../models/" + MODEL_NAME + "/weights.h5"
+checkpoint_path = "../models/" + MODEL_NAME + "/checkpoints/age_model.hdf5"
 
-		self.train_x = []
-		self.train_y = []
-		self.test_x = []
-		self.test_y = []
 
-		self.model = None
+def check_if_model_exist():
+    if not os.path.isfile(model_path) or not os.path.isfile(weight_path):
+        raise Exception("model.json or weights.h5 not available in ", MODEL_NAME)
 
-	def split_df(test_size = 0.3):
-		self.train_x, self.test_x, 
-		self.train_y, self.test_y = train_test_split(self.x, self.y, test_size=test_size)
 
-		print("Train X length = " + str(len(self.train_x)))
-		print("Train Y length = " + str(len(self.train_y)))
-		print("Test X length = " + str(len(self.test_x)))
-		print("Test Y length = " + str(len(self.test_y)))
+def load_trained_model():
+    check_if_model_exist()
 
-	def compile(self, keras_model, 
-					optimizer=keras.optimizers.Adam(learning_rate=0.001),
-					loss='sparse_categorical_crossentropy',
-					metrics=['accuracy']):
+    json_file = open(model_path, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(loaded_model_json)
 
-		self.model = keras_model
-		self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    # load weights into new model
+    model.load_weights(weight_path)
+    print("= TRAINED MODEL LOADED FROM DISK")
 
-		return self.model
+    return model
 
-	def train_data():
-		return (self.train_x, self.train_y)
 
-	def test_data():
-		return (self.test_x, self.test_y)
+def create_new_model():
+    model = VGGFaceModel.build_new_age_model()
 
-	def load_model(name="model"):
-		json_file = open("trained_models/" + name + '.json', 'r')
-		loaded_model_json = json_file.read()
-		json_file.close()
-		self.model = model_from_json(loaded_model_json)
+    return model
 
-		# load weights into new model
-		self.model.load_weights("trained_models/" + name + ".h5")
-		print("Loaded model from disk")
+
+def create_model_and_load_weights():
+    model = create_new_model()
+    model.load_weights(weight_path)
+    print("= TRAINED MODEL LOADED FROM DISK")
+
+    return model
+
+
+def restore_model_from_checkpoint():
+    model = create_new_model()
+    model.load_weights(checkpoint_path)
+    print("= TRAINED MODEL LOADED FROM DISK")
+
+    return model
+
+
+if __name__ == "__main__":
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(BASE_PATH)
+
+    import sys
+    sys.path.insert(0, os.path.dirname(__file__))
+    sys.path.insert(0, os.getcwd())
+
+    check_if_model_exist()
+
+    model = load_trained_model()
+    model.summary()
+
+    print("= MODEL FILE AVAILABLE, USE load_trained_model() function to load your model")
