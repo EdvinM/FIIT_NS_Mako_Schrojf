@@ -3,6 +3,7 @@ import math
 import numpy as np
 from tensorflow.keras.utils import Sequence
 
+
 class WIKISequence(Sequence):
     """Base object for fitting to a sequence of data, such as a dataset.
     Every `Sequence` must implement the `__getitem__` and the `__len__` methods.
@@ -13,9 +14,9 @@ class WIKISequence(Sequence):
     Example: https://www.tensorflow.org/api_docs/python/tf/keras/utils/Sequence
     """
 
-    def __init__(self, x, y, batch_size, base_path = '../data/raw/wiki_crop/'):
-        self.x = x
-        self.y = y
+    def __init__(self, data, target='age', batch_size=16, base_path='../data/raw/wiki_crop/'):
+        self.data = data
+        self.target = target
         self.batch_size = batch_size
         self.base_path = base_path
 
@@ -35,17 +36,17 @@ class WIKISequence(Sequence):
         Returns:
             A batch
         """
-        batch_x = self.x[idx * self.batch_size:(idx + 1) * self.batch_size]
-        batch_y = self.y[idx * self.batch_size:(idx + 1) * self.batch_size]
+        batch_data = self.data[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        return np.array([self.load_img(full_path) for full_path in batch_x['full_path']]), np.array(batch_y['age'])
+        return (np.array([self.load_img(full_path) for full_path in batch_data['full_path']]),
+                np.array(batch_data[self.target]))
 
     def __len__(self):
         """Number of batch in the Sequence.
         Returns:
             The number of batches in the Sequence.
         """
-        return math.ceil(len(self.x) / self.batch_size)
+        return math.ceil(len(self.data) / self.batch_size)
 
     def on_epoch_end(self):
         """Method called at the end of every epoch.
